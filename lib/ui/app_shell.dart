@@ -23,10 +23,10 @@ class _AppShellState extends State<AppShell> {
       const DashboardScreen(),
 
       /// Booking tab
-      BookingHomeScreen(
+      BookHomeScreen(
         onTripBooked: () {
           setState(() {
-            _currentIndex = 0; // 🔥 GO TO DASHBOARD
+            _currentIndex = 2;
           });
         },
       ),

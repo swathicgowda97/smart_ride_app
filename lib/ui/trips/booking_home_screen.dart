@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'add_edit_trip_screen.dart';
 
-class BookingHomeScreen extends StatelessWidget {
+class BookHomeScreen extends StatelessWidget {
   final VoidCallback onTripBooked;
 
-  const BookingHomeScreen({required this.onTripBooked});
+  const BookHomeScreen({required this.onTripBooked});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class SmallActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color, // ✅ CARD COLOR FIXED
+      color: color, //  CARD COLOR FIXED
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(

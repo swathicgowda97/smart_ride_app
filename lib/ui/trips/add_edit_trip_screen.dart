@@ -107,7 +107,7 @@ class _AddEditTripScreenState extends ConsumerState<AddEditTripScreen> {
                 controller: dropController,
                 onTap: _clearFare,
                 onEditingComplete: () {
-                  // Auto-calculate default Mini fare
+                  // ✅ Auto-calculate default Mini fare
                   if (pickupController.text.isNotEmpty &&
                       dropController.text.isNotEmpty) {
                     _requestFareCalculation();
