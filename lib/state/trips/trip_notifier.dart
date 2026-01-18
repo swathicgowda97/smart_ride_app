@@ -51,7 +51,7 @@ class TripNotifier extends StateNotifier<TripState> {
     state = state.copyWith(trips: [...state.trips, trip]);
     _repository.saveTrip(trip);
 
-    // start real-time simulation
+    // 🔥 start real-time simulation
     _simulateRideLifecycle(trip.id);
   }
 

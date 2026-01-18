@@ -13,10 +13,22 @@ class TripListScreen extends ConsumerStatefulWidget {
 
 class _TripListScreenState extends ConsumerState<TripListScreen> {
   final Map<String, TripStatus> _lastStatuses = {};
+  bool _initialized = false;
 
   @override
   Widget build(BuildContext context) {
     ref.listen(tripProvider, (_, next) {
+
+      // First provider emission → seed silently
+      if (!_initialized) {
+        for (final trip in next.trips) {
+          _lastStatuses[trip.id] = trip.status;
+        }
+        _initialized = true;
+        return;
+      }
+
+      // Real-time updates ONLY
       for (final trip in next.trips) {
         final lastStatus = _lastStatuses[trip.id];
 

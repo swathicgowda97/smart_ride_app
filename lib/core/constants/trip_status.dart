@@ -36,6 +36,6 @@ extension TripStatusX on TripStatus {
     }
   }
 
-  /// ✅ ADD THIS
+  /// ADD THIS
   bool get isCompleted => this == TripStatus.completed;
 }
