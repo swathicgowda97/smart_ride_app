@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/ride_types.dart';
+import '../../../../core/constants/trip_status.dart';
 import '../../state/trips/trip_provider.dart';
 import '../widgets/recent_trip_tile.dart';
 import '../widgets/summary_card.dart';
-import '../widgets/trip_chart_placeholder.dart';
-import '../../../core/constants/trip_status.dart';
+import '../widgets/trip_chart.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -16,11 +17,15 @@ class DashboardScreen extends ConsumerWidget {
     final completedTrips =
     trips.where((t) => t.status == TripStatus.completed).toList();
 
-    final totalSpent =
-    completedTrips.fold(0.0, (sum, t) => sum + t.fare);
+    final totalAmount = completedTrips.fold<double>(
+      0,
+          (sum, t) => sum + t.fare,
+    );
 
-    final recentTrips =
-    trips.reversed.take(5).toList();
+    final tripCounts = <RideType, int>{
+      for (final type in RideType.values)
+        type: completedTrips.where((t) => t.rideType == type).length
+    };
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
@@ -29,13 +34,13 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Summary cards
+            /// Summary Cards
             Row(
               children: [
                 Expanded(
                   child: SummaryCard(
                     title: 'Total Trips',
-                    value: trips.length.toString(),
+                    value: completedTrips.length.toString(),
                     icon: Icons.directions_car,
                   ),
                 ),
@@ -43,33 +48,37 @@ class DashboardScreen extends ConsumerWidget {
                 Expanded(
                   child: SummaryCard(
                     title: 'Amount Spent',
-                    value: '₹${totalSpent.toInt()}',
+                    value: '₹${totalAmount.toStringAsFixed(0)}',
                     icon: Icons.currency_rupee,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            /// Chart placeholder (next step)
-            const TripChartPlaceholder(),
+            /// Chart
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: TripChart(tripCounts: tripCounts),
+              ),
+            ),
 
             const SizedBox(height: 24),
 
-            /// Recent trips
+            /// Recent Trips
             const Text(
               'Recent Trips',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
-            if (recentTrips.isEmpty)
-              const Text('No trips yet'),
-
-            ...recentTrips.map(
-                  (trip) => RecentTripTile(trip: trip),
-            ),
+            ...completedTrips
+                .take(5)
+                .map((trip) => RecentTripTile(trip: trip))
+                .toList(),
           ],
         ),
       ),
