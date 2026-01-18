@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../state/dashboard/dashboard_provider.dart';
+import '../../state/trips/trip_provider.dart';
 import '../widgets/recent_trip_tile.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/trip_chart_placeholder.dart';
+import '../../../core/constants/trip_status.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardState = ref.watch(dashboardProvider);
+    final trips = ref.watch(tripProvider).trips;
+
+    final completedTrips =
+    trips.where((t) => t.status == TripStatus.completed).toList();
+
+    final totalSpent =
+    completedTrips.fold(0.0, (sum, t) => sum + t.fare);
+
+    final recentTrips =
+    trips.reversed.take(5).toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
@@ -25,7 +35,7 @@ class DashboardScreen extends ConsumerWidget {
                 Expanded(
                   child: SummaryCard(
                     title: 'Total Trips',
-                    value: dashboardState.totalTrips.toString(),
+                    value: trips.length.toString(),
                     icon: Icons.directions_car,
                   ),
                 ),
@@ -33,7 +43,7 @@ class DashboardScreen extends ConsumerWidget {
                 Expanded(
                   child: SummaryCard(
                     title: 'Amount Spent',
-                    value: '₹${dashboardState.totalSpent.toInt()}',
+                    value: '₹${totalSpent.toInt()}',
                     icon: Icons.currency_rupee,
                   ),
                 ),
@@ -42,7 +52,7 @@ class DashboardScreen extends ConsumerWidget {
 
             const SizedBox(height: 20),
 
-            /// Chart placeholder
+            /// Chart placeholder (next step)
             const TripChartPlaceholder(),
 
             const SizedBox(height: 24),
@@ -54,8 +64,12 @@ class DashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            /// UI placeholder (will connect to Trips later)
-            ...List.generate(5, (_) => const RecentTripTile()),
+            if (recentTrips.isEmpty)
+              const Text('No trips yet'),
+
+            ...recentTrips.map(
+                  (trip) => RecentTripTile(trip: trip),
+            ),
           ],
         ),
       ),

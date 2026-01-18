@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/ride_types.dart';
+import '../../core/constants/trip_status.dart';
+import '../../models/trip.dart';
 
 class RecentTripTile extends StatelessWidget {
-  const RecentTripTile({super.key});
+  final Trip trip;
+
+  const RecentTripTile({
+    super.key,
+    required this.trip,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -9,9 +17,9 @@ class RecentTripTile extends StatelessWidget {
       color: Colors.orange.shade50,
       child: ListTile(
         leading: const Icon(Icons.local_taxi),
-        title: const Text('MG Road → Indiranagar'),
-        subtitle: const Text('Mini • ₹180'),
-        trailing: const Text('Completed'),
+        title: Text('${trip.pickupLocation} → ${trip.dropLocation}'),
+        subtitle: Text('${trip.rideType.label} • ₹${trip.fare.toInt()}'),
+        trailing: Text(trip.status.label),
       ),
     );
   }
