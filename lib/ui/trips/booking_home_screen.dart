@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'add_edit_trip_screen.dart';
 
-class BookTripHomeScreen extends StatelessWidget {
-  const BookTripHomeScreen({super.key});
+class BookingHomeScreen extends StatelessWidget {
+  final VoidCallback onTripBooked;
+
+  const BookingHomeScreen({required this.onTripBooked});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Book a Ride'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Book a Ride'), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -19,10 +18,7 @@ class BookTripHomeScreen extends StatelessWidget {
             /// Header
             const Text(
               'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 16),
@@ -33,13 +29,15 @@ class BookTripHomeScreen extends StatelessWidget {
               title: 'Book New Trip',
               subtitle: 'Create a new ride booking',
               color: Colors.orange.shade50,
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final success = await Navigator.push<bool>(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const AddEditTripScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const AddEditTripScreen()),
                 );
+
+                if (success == true) {
+                  onTripBooked();
+                }
               },
             ),
 
@@ -71,10 +69,7 @@ class BookTripHomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             /// Tip Section
-            const Text(
-              'Tip',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text('Tip', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text(
               'Use quick actions to save time when booking frequent rides.',
@@ -108,28 +103,13 @@ class ActionCard extends StatelessWidget {
     return Card(
       color: color,
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        leading: Icon(
-          icon,
-          size: 32,
-          color: Colors.orange,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Icon(icon, size: 32, color: Colors.orange),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
       ),
     );
@@ -155,9 +135,7 @@ class SmallActionCard extends StatelessWidget {
     return Card(
       color: color, // ✅ CARD COLOR FIXED
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,
@@ -166,18 +144,9 @@ class SmallActionCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 28,
-                color: Colors.black87,
-              ),
+              Icon(icon, size: 28, color: Colors.black87),
               const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
             ],
           ),
         ),

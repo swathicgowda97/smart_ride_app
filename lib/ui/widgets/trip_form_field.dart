@@ -22,13 +22,35 @@ class TripFormField extends StatelessWidget {
         readOnly: config.readOnly,
         onTap: onTap,
         keyboardType: config.keyboardType,
+        cursorColor: Colors.grey, // ✅ cursor color set to grey
         validator: (v) =>
         v == null || v.isEmpty ? config.errorMessage : null,
         decoration: InputDecoration(
           labelText: config.label,
-          border: const OutlineInputBorder(),
+          labelStyle: const TextStyle(color: Colors.black54),
+          floatingLabelStyle: TextStyle(
+            color: Colors.blue.shade300,
+            fontWeight: FontWeight.bold,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Colors.grey.shade400,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Colors.blue.shade100,
+              width: 2,
+            ),
+          ),
         ),
       ),
     );
   }
 }
+

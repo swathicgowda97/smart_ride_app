@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_ride/core/constants/app_strings.dart';
-import 'package:smart_ride/ui/widgets/ride_type_selector.dart';
-import '../../../core/constants/ride_types.dart';
-import '../../../core/constants/trip_status.dart';
+import 'package:smart_ride/core/constants/ride_types.dart';
+import 'package:smart_ride/core/constants/trip_status.dart';
+
 import '../../models/trip.dart';
 import '../../state/trips/trip_provider.dart';
 import '../ui_models/trip_form_field_model.dart';
 import '../widgets/trip_form_field.dart';
+import '../widgets/ride_type_selector.dart';
 
 class AddEditTripScreen extends ConsumerStatefulWidget {
   final Trip? trip;
@@ -27,10 +28,44 @@ class _AddEditTripScreenState
   TextEditingController(text: widget.trip?.pickupLocation ?? '');
   late final dropController =
   TextEditingController(text: widget.trip?.dropLocation ?? '');
-  late final fareController =
-  TextEditingController(text: widget.trip?.fare.toString() ?? '');
 
   RideType selectedRideType = RideType.mini;
+  double? calculatedFare;
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// Calculate fare ONLY when drop is typed fully
+    dropController.addListener(_requestFareCalculation);
+  }
+
+  void _requestFareCalculation() {
+    final notifier = ref.read(tripProvider.notifier);
+
+    final fare = notifier.calculateFare(
+      pickup: pickupController.text,
+      drop: dropController.text,
+      rideType: selectedRideType,
+    );
+
+    setState(() {
+      calculatedFare = fare == 0 ? null : fare;
+    });
+  }
+
+  IconData _rideIcon(RideType type) {
+    switch (type) {
+      case RideType.mini:
+        return Icons.directions_car;
+      case RideType.sedan:
+        return Icons.local_taxi;
+      case RideType.auto:
+        return Icons.electric_rickshaw;
+      case RideType.bike:
+        return Icons.two_wheeler;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +79,6 @@ class _AddEditTripScreenState
       errorMessage: AppStrings.dropError,
     );
 
-    final fareField = TripFormFieldModel(
-      label: AppStrings.fareLabel,
-      errorMessage: AppStrings.fareError,
-      keyboardType: TextInputType.number,
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.trip == null ? 'Book Trip' : 'Edit Trip'),
@@ -60,52 +89,107 @@ class _AddEditTripScreenState
           key: _formKey,
           child: ListView(
             children: [
+              /// Pickup Location
               TripFormField(
                 config: pickupField,
                 controller: pickupController,
               ),
+             const SizedBox(height: 10),
+              /// Drop Location
               TripFormField(
                 config: dropField,
                 controller: dropController,
               ),
+              const SizedBox(height: 10),
+              /// Ride Type Selector
               RideTypeSelector(
                 selected: selectedRideType,
-                onChanged: (v) => selectedRideType = v,
+                onChanged: (type) {
+                  setState(() => selectedRideType = type);
+                  _requestFareCalculation();
+                },
               ),
-              const SizedBox(height: 16),
-              TripFormField(
-                config: fareField,
-                controller: fareController,
-              ),
+
+              /// Fare Card (ONLY when calculated)
+              if (calculatedFare != null)
+                Card(
+                  margin: const EdgeInsets.only(top: 16),
+                  color: Colors.orange.shade100,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _rideIcon(selectedRideType),
+                          size: 36,
+                          color: Colors.orange.shade800,
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              selectedRideType.label,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '₹${calculatedFare!.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
               const SizedBox(height: 24),
+
+              /// Save Trip
               ElevatedButton(
-                child: const Text('Save Trip'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  'Save Trip',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
+                  if (_formKey.currentState!.validate() &&
+                      calculatedFare != null) {
                     final trip = Trip(
                       id: widget.trip?.id ??
                           DateTime.now().millisecondsSinceEpoch.toString(),
                       pickupLocation: pickupController.text,
                       dropLocation: dropController.text,
                       rideType: selectedRideType,
-                      fare: double.tryParse(fareController.text) ?? 0,
+                      fare: calculatedFare!,
                       dateTime: DateTime.now(),
                       status: TripStatus.requested,
                     );
 
-                    final notifier =
-                    ref.read(tripProvider.notifier);
+                    ref.read(tripProvider.notifier).addTrip(trip);
 
-                    if (widget.trip == null) {
-                      notifier.addTrip(trip);
-                    } else {
-                      notifier.updateTrip(trip);
-                    }
-
-                    Navigator.pop(context);
+                    Navigator.pop(context, true);
                   }
                 },
               ),
+
             ],
           ),
         ),
