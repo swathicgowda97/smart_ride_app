@@ -2,14 +2,25 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/ride_types.dart';
 import '../../../core/constants/trip_status.dart';
+import '../../data/hive/repositories/trip_repository.dart';
 import '../../models/trip.dart';
 import 'trip_state.dart';
 
 class TripNotifier extends StateNotifier<TripState> {
-  TripNotifier() : super(const TripState());
+  final TripRepository _repository;
 
+  TripNotifier(this._repository) : super(const TripState()) {
+    _loadTrips();
+  }
 
-  // Fare calculation
+  // LOAD PERSISTED DATA
+
+  Future<void> _loadTrips() async {
+    final trips = await _repository.loadTrips();
+    state = state.copyWith(trips: trips);
+  }
+
+  // FARE CALCULATION (UNCHANGED)
 
   double calculateFare({
     required String pickup,
@@ -34,13 +45,13 @@ class TripNotifier extends StateNotifier<TripState> {
     }
   }
 
-
-  // CRUD
+  // CRUD + PERSISTENCE
 
   void addTrip(Trip trip) {
     state = state.copyWith(trips: [...state.trips, trip]);
+    _repository.saveTrip(trip);
 
-    // 🔥 start real-time simulation immediately
+    // start real-time simulation
     _simulateRideLifecycle(trip.id);
   }
 
@@ -50,49 +61,41 @@ class TripNotifier extends StateNotifier<TripState> {
           .map((t) => t.id == updatedTrip.id ? updatedTrip : t)
           .toList(),
     );
+
+    _repository.saveTrip(updatedTrip);
   }
 
   void removeTrip(String id) {
     state = state.copyWith(
       trips: state.trips.where((t) => t.id != id).toList(),
     );
-  }
 
+    _repository.deleteTrip(id);
+  }
 
   // REAL-TIME STATUS SIMULATION
 
   void _simulateRideLifecycle(String tripId) async {
-    Future<void> updateStatus(
-        TripStatus status,
-        Duration delay,
-        ) async {
+    Future<void> updateStatus(TripStatus status, Duration delay) async {
       await Future.delayed(delay);
 
       final trip = state.trips.firstWhere(
-            (t) => t.id == tripId,
+        (t) => t.id == tripId,
         orElse: () => throw Exception('Trip not found'),
       );
 
       // Prevent updating cancelled/completed trips
       if (trip.status == TripStatus.cancelled ||
-          trip.status == TripStatus.completed) return;
+          trip.status == TripStatus.completed)
+        return;
 
       updateTrip(trip.copyWith(status: status));
     }
 
-    await updateStatus(
-      TripStatus.driverAssigned,
-      const Duration(seconds: 3),
-    );
+    await updateStatus(TripStatus.driverAssigned, const Duration(seconds: 3));
 
-    await updateStatus(
-      TripStatus.rideStarted,
-      const Duration(seconds: 4),
-    );
+    await updateStatus(TripStatus.rideStarted, const Duration(seconds: 4));
 
-    await updateStatus(
-      TripStatus.completed,
-      const Duration(seconds: 6),
-    );
+    await updateStatus(TripStatus.completed, const Duration(seconds: 6));
   }
 }
