@@ -34,7 +34,8 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
       }
     });
 
-    final trips = ref.watch(tripProvider).trips;
+    final trips = [...ref.watch(tripProvider).trips]
+      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Trips')),
@@ -58,4 +59,11 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
       ),
     );
   }
+
+  String _formatDateTime(DateTime dt) {
+    return '${dt.day}/${dt.month}/${dt.year} • '
+        '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}';
+  }
+
 }

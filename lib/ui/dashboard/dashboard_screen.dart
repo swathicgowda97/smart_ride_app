@@ -4,7 +4,7 @@ import '../../../../core/constants/ride_types.dart';
 import '../../../../core/constants/trip_status.dart';
 import '../../state/trips/trip_provider.dart';
 import '../limits/spending_limit_screen.dart';
-import '../widgets/recent_trip_tile.dart';
+import '../widgets/trip_tile.dart';
 import '../widgets/spending_limit_card.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/trip_chart.dart';
@@ -16,8 +16,11 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trips = ref.watch(tripProvider).trips;
 
-    final completedTrips =
-    trips.where((t) => t.status == TripStatus.completed).toList();
+    final completedTrips = trips
+        .where((t) => t.status == TripStatus.completed)
+        .toList()
+      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
 
     final totalAmount = completedTrips.fold<double>(
       0,
@@ -93,7 +96,7 @@ class DashboardScreen extends ConsumerWidget {
 
             ...completedTrips
                 .take(5)
-                .map((trip) => RecentTripTile(trip: trip))
+                .map((trip) => TripTile(trip: trip))
                 .toList(),
           ],
         ),

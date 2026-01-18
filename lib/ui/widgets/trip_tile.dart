@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/trip_status.dart';
 import '../../../../core/constants/ride_types.dart';
+import '../../../../core/constants/trip_status.dart';
 import '../../models/trip.dart';
 
 class TripTile extends StatelessWidget {
   final Trip trip;
 
-  const TripTile({super.key, required this.trip});
+  const TripTile({
+    super.key,
+    required this.trip,
+  });
 
   IconData _rideIcon(RideType type) {
     switch (type) {
@@ -32,6 +35,13 @@ class TripTile extends StatelessWidget {
     }
   }
 
+  String _formatDateTime(DateTime dt) {
+    return '${dt.day}/${dt.month}/${dt.year} • '
+        '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -42,7 +52,21 @@ class TripTile extends StatelessWidget {
           color: Colors.orange.shade700,
         ),
         title: Text('${trip.pickupLocation} → ${trip.dropLocation}'),
-        subtitle: Text('${trip.rideType.label} • ₹${trip.fare.toInt()}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${trip.rideType.label} • ₹${trip.fare.toInt()}'),
+            const SizedBox(height: 4),
+            Text(
+              _formatDateTime(trip.dateTime),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+
         trailing: Text(
           trip.status.label,
           style: TextStyle(
