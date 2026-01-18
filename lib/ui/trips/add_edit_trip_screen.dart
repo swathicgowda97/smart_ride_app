@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_ride/core/constants/app_strings.dart';
-import 'package:smart_ride/ui/trips/ride_type_selector.dart';
+import 'package:smart_ride/ui/widgets/ride_type_selector.dart';
 import '../../../core/constants/ride_types.dart';
 
 import '../../models/trip.dart';

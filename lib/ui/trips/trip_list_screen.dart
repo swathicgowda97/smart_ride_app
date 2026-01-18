@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_ride/ui/trips/trip_tile.dart';
+import 'package:smart_ride/ui/widgets/trip_tile.dart';
 import '../../../core/constants/ride_types.dart';
 import '../../../core/constants/trip_status.dart';
 import '../../models/trip.dart';

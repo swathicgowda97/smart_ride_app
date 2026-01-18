@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../state/dashboard/dashboard_provider.dart';
 import '../widgets/recent_trip_tile.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/trip_chart_placeholder.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardState = ref.watch(dashboardProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -18,20 +21,19 @@ class DashboardScreen extends StatelessWidget {
           children: [
             /// Summary cards
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
+              children: [
                 Expanded(
                   child: SummaryCard(
                     title: 'Total Trips',
-                    value: '24',
+                    value: dashboardState.totalTrips.toString(),
                     icon: Icons.directions_car,
                   ),
                 ),
-                SizedBox(width: 2),
+                const SizedBox(width: 8),
                 Expanded(
                   child: SummaryCard(
                     title: 'Amount Spent',
-                    value: '₹4,560',
+                    value: '₹${dashboardState.totalSpent.toInt()}',
                     icon: Icons.currency_rupee,
                   ),
                 ),
@@ -52,7 +54,8 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            ...List.generate(5, (index) => const RecentTripTile()),
+            /// UI placeholder (will connect to Trips later)
+            ...List.generate(5, (_) => const RecentTripTile()),
           ],
         ),
       ),
