@@ -5,12 +5,14 @@ class TripFormField extends StatelessWidget {
   final TripFormFieldModel config;
   final TextEditingController controller;
   final VoidCallback? onTap;
+  final VoidCallback? onEditingComplete;
 
   const TripFormField({
     super.key,
     required this.config,
     required this.controller,
     this.onTap,
+    this.onEditingComplete,
   });
 
   @override
@@ -21,8 +23,9 @@ class TripFormField extends StatelessWidget {
         controller: controller,
         readOnly: config.readOnly,
         onTap: onTap,
+        onEditingComplete: onEditingComplete,
         keyboardType: config.keyboardType,
-        cursorColor: Colors.grey, // ✅ cursor color set to grey
+        cursorColor: Colors.grey,
         validator: (v) =>
         v == null || v.isEmpty ? config.errorMessage : null,
         decoration: InputDecoration(

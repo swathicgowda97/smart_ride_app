@@ -16,18 +16,18 @@ class AddEditTripScreen extends ConsumerStatefulWidget {
   const AddEditTripScreen({super.key, this.trip});
 
   @override
-  ConsumerState<AddEditTripScreen> createState() =>
-      _AddEditTripScreenState();
+  ConsumerState<AddEditTripScreen> createState() => _AddEditTripScreenState();
 }
 
-class _AddEditTripScreenState
-    extends ConsumerState<AddEditTripScreen> {
+class _AddEditTripScreenState extends ConsumerState<AddEditTripScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late final pickupController =
-  TextEditingController(text: widget.trip?.pickupLocation ?? '');
-  late final dropController =
-  TextEditingController(text: widget.trip?.dropLocation ?? '');
+  late final pickupController = TextEditingController(
+    text: widget.trip?.pickupLocation ?? '',
+  );
+  late final dropController = TextEditingController(
+    text: widget.trip?.dropLocation ?? '',
+  );
 
   RideType selectedRideType = RideType.mini;
   double? calculatedFare;
@@ -35,9 +35,6 @@ class _AddEditTripScreenState
   @override
   void initState() {
     super.initState();
-
-    /// Calculate fare ONLY when drop is typed fully
-    dropController.addListener(_requestFareCalculation);
   }
 
   void _requestFareCalculation() {
@@ -52,6 +49,12 @@ class _AddEditTripScreenState
     setState(() {
       calculatedFare = fare == 0 ? null : fare;
     });
+  }
+
+  void _clearFare() {
+    if (calculatedFare != null) {
+      setState(() => calculatedFare = null);
+    }
   }
 
   IconData _rideIcon(RideType type) {
@@ -93,19 +96,33 @@ class _AddEditTripScreenState
               TripFormField(
                 config: pickupField,
                 controller: pickupController,
+                onTap: _clearFare,
               ),
-             const SizedBox(height: 10),
+
+              const SizedBox(height: 10),
+
               /// Drop Location
               TripFormField(
                 config: dropField,
                 controller: dropController,
+                onTap: _clearFare,
+                onEditingComplete: () {
+                  // Auto-calculate default Mini fare
+                  if (pickupController.text.isNotEmpty &&
+                      dropController.text.isNotEmpty) {
+                    _requestFareCalculation();
+                  }
+                },
               ),
               const SizedBox(height: 10),
+
               /// Ride Type Selector
               RideTypeSelector(
                 selected: selectedRideType,
                 onChanged: (type) {
                   setState(() => selectedRideType = type);
+
+                  /// Fare calculated ONLY after ride type selection
                   _requestFareCalculation();
                 },
               ),
@@ -173,7 +190,8 @@ class _AddEditTripScreenState
                   if (_formKey.currentState!.validate() &&
                       calculatedFare != null) {
                     final trip = Trip(
-                      id: widget.trip?.id ??
+                      id:
+                          widget.trip?.id ??
                           DateTime.now().millisecondsSinceEpoch.toString(),
                       pickupLocation: pickupController.text,
                       dropLocation: dropController.text,
@@ -189,7 +207,6 @@ class _AddEditTripScreenState
                   }
                 },
               ),
-
             ],
           ),
         ),
