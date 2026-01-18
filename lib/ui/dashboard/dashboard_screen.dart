@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/ride_types.dart';
 import '../../../../core/constants/trip_status.dart';
 import '../../state/trips/trip_provider.dart';
+import '../limits/spending_limit_screen.dart';
 import '../widgets/recent_trip_tile.dart';
+import '../widgets/spending_limit_card.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/trip_chart.dart';
 
@@ -54,6 +56,20 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ],
             ),
+
+            const SizedBox(height: 16),
+
+            SpendingLimitCard(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SpendingLimitScreen(),
+                  ),
+                );
+              },
+            ),
+
 
             const SizedBox(height: 24),
 

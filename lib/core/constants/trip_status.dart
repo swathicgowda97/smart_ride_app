@@ -21,4 +21,6 @@ extension TripStatusX on TripStatus {
         return 'Cancelled';
     }
   }
+
+  bool get isCompleted => this == TripStatus.completed;
 }
