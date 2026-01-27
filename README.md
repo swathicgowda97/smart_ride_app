@@ -1,16 +1,146 @@
-# smart_ride
+Smart Ride Booking & Trip Management App
 
-A new Flutter project.
+A Flutter-based ride booking simulation app inspired by platforms like Ola/Uber.
+The app demonstrates real-time state updates, offline persistence, analytics, and clean architecture using Flutter + Riverpod + Hive.
 
-## Getting Started
+📱 Features Overview
+🏠 Dashboard
 
-This project is a starting point for a Flutter application.
+Total trips completed
 
-A few resources to get you started if this is your first Flutter project:
+Total amount spent
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Recent trips (latest first)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Ride-type based analytics (Mini, Sedan, Auto, Bike)
+
+Live updates when trips change status
+
+Spending limit alerts
+
+🚗 Trip Booking & Management
+
+Add, view, and delete trips
+
+Pickup & drop locations
+
+Ride type selection
+
+Fare calculated automatically
+
+Date & time tracking
+
+Offline persistence using Hive
+
+Swipe-to-delete with undo (bonus)
+
+🔄 Real-Time Ride Simulation
+
+Automatic status progression:
+
+Requested → Driver Assigned → Ride Started → Completed
+
+Simulated delays using timers
+
+State-driven UI updates (no manual refresh)
+
+📍 Driver Tracking (Mocked)
+
+Animated progress bar
+
+Moving car icon illusion
+
+ETA countdown updating every few seconds
+
+No maps required (lightweight simulation)
+
+💰 Spending Limits
+
+Monthly spending limits per ride type
+
+Color-coded warnings when approaching limits
+
+Real-time recalculation when rides complete
+
+Persisted locally using Hive
+
+🔔 In-App Notifications
+
+Snackbars triggered automatically on:
+
+Driver assigned
+
+Ride started
+
+Ride completed
+
+Notifications driven purely by state changes
+
+🧠 Architecture
+
+The app follows Clean Architecture principles:
+
+lib/
+│
+├── core/              # Constants, enums, shared utils
+│
+├── data/              # Hive models & repositories
+│
+├── models/            # Domain models
+│
+├── state/             # Riverpod StateNotifiers
+│
+├── ui/                # Screens & widgets
+│
+├── tests/             # Unit & widget tests
+│
+└── main.dart
+
+State Management
+
+Riverpod (StateNotifier)
+
+Centralized business logic
+
+Reactive UI updates
+
+Test-friendly design
+
+💾 Local Storage
+
+Hive for offline persistence
+
+Trips and spending limits are restored on app restart
+
+Enum adapters used for ride type and trip status
+
+🧪 Testing
+Unit Tests Included
+
+Trip CRUD operations
+
+Real-time trip lifecycle transitions
+
+Spending limit calculations
+
+Dashboard aggregation logic
+
+Driver tracking state updates
+
+Run Tests
+flutter test
+
+🚀 Getting Started
+Prerequisites
+
+Flutter 3.x+
+
+Dart
+
+Android Studio / VS Code
+
+Setup
+git clone <repo-url>
+cd smart_ride
+flutter pub get
+flutter run
