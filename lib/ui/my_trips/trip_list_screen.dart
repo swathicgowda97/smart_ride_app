@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_ride/ui/widgets/trip_tile.dart';
 import '../../core/constants/trip_status.dart';
 import '../../state/trips/trip_provider.dart';
+import '../../models/trip.dart';
 
 class TripListScreen extends ConsumerStatefulWidget {
   const TripListScreen({super.key});
@@ -15,11 +16,12 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
   final Map<String, TripStatus> _lastStatuses = {};
   bool _initialized = false;
 
+  Trip? _recentlyDeletedTrip;
+
   @override
   Widget build(BuildContext context) {
     ref.listen(tripProvider, (_, next) {
-
-      // First provider emission → seed silently
+      // Seed initial statuses silently
       if (!_initialized) {
         for (final trip in next.trips) {
           _lastStatuses[trip.id] = trip.status;
@@ -28,16 +30,14 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
         return;
       }
 
-      // Real-time updates ONLY
+      // Real-time status notifications
       for (final trip in next.trips) {
         final lastStatus = _lastStatuses[trip.id];
 
-        ///  CASE 1: Brand new trip → show "Requested"
         if (lastStatus == null && trip.status == TripStatus.requested) {
           _showSnack(context, trip.status);
         }
 
-        ///  CASE 2: Existing trip → status changed
         if (lastStatus != null && lastStatus != trip.status) {
           _showSnack(context, trip.status);
         }
@@ -54,7 +54,56 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: trips.length,
-        itemBuilder: (_, i) => TripTile(trip: trips[i]),
+        itemBuilder: (_, i) {
+          final trip = trips[i];
+
+          return Dismissible(
+            key: ValueKey(trip.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.red.shade400,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
+            ),
+            onDismissed: (_) {
+              _recentlyDeletedTrip = trip;
+
+              ref.read(tripProvider.notifier).removeTrip(trip.id);
+
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'Trip deleted',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  backgroundColor: Colors.orange.shade300,
+                  duration: const Duration(seconds: 4),
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    textColor: Colors.black,
+                    onPressed: () {
+                      if (_recentlyDeletedTrip != null) {
+                        ref
+                            .read(tripProvider.notifier)
+                            .addTrip(_recentlyDeletedTrip!);
+                        _recentlyDeletedTrip = null;
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
+            child: TripTile(trip: trip),
+          );
+        },
       ),
     );
   }
@@ -71,11 +120,4 @@ class _TripListScreenState extends ConsumerState<TripListScreen> {
       ),
     );
   }
-
-  String _formatDateTime(DateTime dt) {
-    return '${dt.day}/${dt.month}/${dt.year} • '
-        '${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}';
-  }
-
 }
