@@ -9,6 +9,8 @@ class Trip {
   final double fare;
   final DateTime dateTime;
   final TripStatus status;
+  final int etaSeconds;
+  final double progress;
 
   const Trip({
     required this.id,
@@ -18,6 +20,8 @@ class Trip {
     required this.fare,
     required this.dateTime,
     required this.status,
+    this.etaSeconds = 0,
+    this.progress = 0.0,
   });
 
   Trip copyWith({
@@ -28,6 +32,8 @@ class Trip {
     double? fare,
     DateTime? dateTime,
     TripStatus? status,
+    int? etaSeconds,
+    double? progress,
   }) {
     return Trip(
       id: id ?? this.id,
@@ -37,6 +43,8 @@ class Trip {
       fare: fare ?? this.fare,
       dateTime: dateTime ?? this.dateTime,
       status: status ?? this.status,
+      etaSeconds: etaSeconds ?? this.etaSeconds,
+      progress: progress ?? this.progress,
     );
   }
 }

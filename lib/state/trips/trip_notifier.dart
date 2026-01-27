@@ -9,6 +9,8 @@ import 'trip_state.dart';
 class TripNotifier extends StateNotifier<TripState> {
   final TripRepository _repository;
 
+  Timer? _driverTimer;
+
   TripNotifier(this._repository) : super(const TripState()) {
     _loadTrips();
   }
@@ -73,29 +75,112 @@ class TripNotifier extends StateNotifier<TripState> {
     _repository.deleteTrip(id);
   }
 
-  // REAL-TIME STATUS SIMULATION
+  // DRIVER TRACKING (MOCK REAL-TIME)
+
+  void _startDriverTracking({
+    required String tripId,
+    required int totalSeconds,
+  }) {
+    _driverTimer?.cancel();
+
+    int remaining = totalSeconds;
+
+    _driverTimer = Timer.periodic(
+      const Duration(seconds: 2),
+          (timer) {
+        remaining -= 2;
+
+        final trip = state.trips.firstWhere(
+              (t) => t.id == tripId,
+          orElse: () => throw Exception('Trip not found'),
+        );
+
+        if (remaining <= 0 ||
+            trip.status == TripStatus.completed ||
+            trip.status == TripStatus.cancelled) {
+          timer.cancel();
+          updateTrip(
+            trip.copyWith(
+              etaSeconds: 0,
+              progress: 1.0,
+            ),
+          );
+          return;
+        }
+
+        final progress = 1 - (remaining / totalSeconds);
+
+        updateTrip(
+          trip.copyWith(
+            etaSeconds: remaining,
+            progress: progress.clamp(0.0, 1.0),
+          ),
+        );
+      },
+    );
+  }
+
+
+// REAL-TIME STATUS SIMULATION (STATE-DRIVEN)
 
   void _simulateRideLifecycle(String tripId) async {
     Future<void> updateStatus(TripStatus status, Duration delay) async {
       await Future.delayed(delay);
 
       final trip = state.trips.firstWhere(
-        (t) => t.id == tripId,
+            (t) => t.id == tripId,
         orElse: () => throw Exception('Trip not found'),
       );
 
-      // Prevent updating cancelled/completed trips
+      // Stop if already finished
       if (trip.status == TripStatus.cancelled ||
-          trip.status == TripStatus.completed)
+          trip.status == TripStatus.completed) {
         return;
+      }
 
-      updateTrip(trip.copyWith(status: status));
+      final updatedTrip = trip.copyWith(status: status);
+      updateTrip(updatedTrip);
+
+      // 🔗 HOOK DRIVER TRACKING TO STATUS
+      if (status == TripStatus.driverAssigned) {
+        _startDriverTracking(
+          tripId: tripId,
+          totalSeconds: 120, // driver approaching
+        );
+      }
+
+      if (status == TripStatus.rideStarted) {
+        _startDriverTracking(
+          tripId: tripId,
+          totalSeconds: 180, // ride in progress
+        );
+      }
+
+      if (status == TripStatus.completed ||
+          status == TripStatus.cancelled) {
+        _driverTimer?.cancel();
+      }
     }
 
-    await updateStatus(TripStatus.driverAssigned, const Duration(seconds: 3));
+    await updateStatus(
+      TripStatus.driverAssigned,
+      const Duration(seconds: 3),
+    );
 
-    await updateStatus(TripStatus.rideStarted, const Duration(seconds: 4));
+    await updateStatus(
+      TripStatus.rideStarted,
+      const Duration(seconds: 4),
+    );
 
-    await updateStatus(TripStatus.completed, const Duration(seconds: 6));
+    await updateStatus(
+      TripStatus.completed,
+      const Duration(seconds: 6),
+    );
+  }
+
+  @override
+  void dispose() {
+    _driverTimer?.cancel();
+    super.dispose();
   }
 }

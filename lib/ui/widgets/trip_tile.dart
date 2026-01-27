@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/ride_types.dart';
 import '../../../../core/constants/trip_status.dart';
 import '../../models/trip.dart';
+import 'driver_tracking_widget.dart';
 
 class TripTile extends StatelessWidget {
   final Trip trip;
@@ -41,39 +42,52 @@ class TripTile extends StatelessWidget {
         '${dt.minute.toString().padLeft(2, '0')}';
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Card(
       color: Colors.orange.shade50,
-      child: ListTile(
-        leading: Icon(
-          _rideIcon(trip.rideType),
-          color: Colors.orange.shade700,
-        ),
-        title: Text('${trip.pickupLocation} → ${trip.dropLocation}'),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${trip.rideType.label} • ₹${trip.fare.toInt()}'),
-            const SizedBox(height: 4),
-            Text(
-              _formatDateTime(trip.dateTime),
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              _rideIcon(trip.rideType),
+              color: Colors.orange.shade700,
+            ),
+            title: Text('${trip.pickupLocation} → ${trip.dropLocation}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${trip.rideType.label} • ₹${trip.fare.toInt()}'),
+                const SizedBox(height: 4),
+                Text(
+                  _formatDateTime(trip.dateTime),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            trailing: Text(
+              trip.status.label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: _statusColor(trip.status),
               ),
             ),
-          ],
-        ),
-
-        trailing: Text(
-          trip.status.label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: _statusColor(trip.status),
           ),
-        ),
+
+          /// DRIVER TRACKING (VISIBLE ILLUSION)
+          if (trip.status == TripStatus.driverAssigned ||
+              trip.status == TripStatus.rideStarted)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: DriverTrackingWidget(
+                etaSeconds: trip.etaSeconds,
+                progress: trip.progress,
+              ),
+            ),
+        ],
       ),
     );
   }
